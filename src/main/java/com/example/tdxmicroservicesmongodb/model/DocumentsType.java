@@ -17,8 +17,6 @@ public class DocumentsType {
 		this.name = name;
 	}
 
-
-
 	public String getCode() {
 		return code;
 	}

@@ -1,57 +1,63 @@
 package com.example.tdxmicroservicesmongodb.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.DisabledException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UserDetails;
+import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import com.example.tdxmicroservicesmongodb.service.JwtUserDetailsService;
 
-
-import com.example.tdxmicroservicesmongodb.config.JwtTokenUtil;
 import com.example.tdxmicroservicesmongodb.model.JwtRequest;
-import com.example.tdxmicroservicesmongodb.model.JwtResponse;
+
+
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 
 @RestController
 @CrossOrigin
 public class JwtAuthenticationController {
-
-	@Autowired
-	private AuthenticationManager authenticationManager;
-
-	@Autowired
-	private JwtTokenUtil jwtTokenUtil;
-
-	@Autowired
-	private JwtUserDetailsService userDetailsService;
-
-	@RequestMapping(value = "/api/v1/authenticate", method = RequestMethod.POST)
-	public ResponseEntity<?> createAuthenticationToken(@RequestBody JwtRequest authenticationRequest) throws Exception {
-
-		authenticate(authenticationRequest.getUsername(), authenticationRequest.getPassword());
-
-		final UserDetails userDetails = userDetailsService
-				.loadUserByUsername(authenticationRequest.getUsername());
-
-		final String token = jwtTokenUtil.generateToken(userDetails);
-
-		return ResponseEntity.ok(new JwtResponse(token));
+	@Value("${spring.jwt.secret}")
+	private String secretKey;
+	
+	private final String SECRET_JWT = "tdxjwtToken2022";
+	
+	
+	@RequestMapping(value = "/api/v1/auth", method = RequestMethod.POST)
+	public JwtRequest login(@RequestParam("username") String username, @RequestParam("password") String pwd) {
+		
+		String token = getJWTToken(username);
+		JwtRequest user = new JwtRequest();
+		user.setUsername(username);
+		user.setToken(token);		
+		return user;
+		
 	}
+	
+	
+	private String getJWTToken(String username) {
+		//String secretKey = "mySecretKey";
+		List<GrantedAuthority> grantedAuthorities = AuthorityUtils
+				.commaSeparatedStringToAuthorityList("ROLE_USER_TDX");
+		
+		String token = Jwts
+				.builder()
+				.setId("tdxBackEnd")
+				.setSubject(username)
+				.claim("authorities",
+						grantedAuthorities.stream()
+								.map(GrantedAuthority::getAuthority)
+								.collect(Collectors.toList()))
+				.setIssuedAt(new Date(System.currentTimeMillis()))
+				.setExpiration(new Date(System.currentTimeMillis() + 300000))
+				.signWith(SignatureAlgorithm.HS512,SECRET_JWT.getBytes())
+				.compact();
 
-	private void authenticate(String username, String password) throws Exception {
-		try {
-			authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
-		} catch (DisabledException e) {
-			throw new Exception("USER_DISABLED", e);
-		} catch (BadCredentialsException e) {
-			throw new Exception("INVALID_CREDENTIALS", e);
-		}
+		return token;
 	}
 }

@@ -15,11 +15,13 @@ public class Documents {
     public static final String SEQUENCE_NAME = "documents_sequence";
 	
 	@Id
-	private String _id;
+	private String id;
 	private Integer number;
 	private String expiryDate;
 	private Date emissionDate;	
 	private DocumentsType documentType;
+
+	
 	
 	
 	public Documents() {
@@ -35,8 +37,15 @@ public class Documents {
 		this.emissionDate = emissionDate;
 		this.documentType = documentType;
 	}
+	public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 	
-	public Number getNumber() {
+	public Integer getNumber() {
 		return number;
 	}
 	public void setNumber(Integer number) {
