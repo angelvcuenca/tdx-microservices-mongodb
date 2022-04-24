@@ -13,7 +13,7 @@ import com.example.tdxmicroservicesmongodb.model.InfoError;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-	// handling specific exception
+	// manejo de excepción específica
 	@ExceptionHandler(ResourceNotFoundException.class)
 	public ResponseEntity<?> resourceNotFoundHandling(ResourceNotFoundException exception, WebRequest request){
 		InfoError errorDetails = 
@@ -21,7 +21,7 @@ public class GlobalExceptionHandler {
 		return new ResponseEntity<>(errorDetails, HttpStatus.NOT_FOUND);
 	}
 
-	// handling global exception
+	// manejo de excepciones globales
 	
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<?> globalExceptionHandling(Exception exception, WebRequest request){

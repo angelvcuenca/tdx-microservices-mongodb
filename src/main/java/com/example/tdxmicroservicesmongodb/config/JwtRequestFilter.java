@@ -26,7 +26,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 	private final String HEADER = "Authorization";
 	private final String SECRET_JWT = "tdxjwtToken2022";
 	
-	
+	//Realiza un filtro interno para real proceso de chequeo y verificacion del token
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
 		
@@ -52,18 +52,16 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 		}
 	}
 	
+	//checkJWTToken que se ha enviado por el header de la petecion
 	private boolean checkJWTToken(HttpServletRequest request, HttpServletResponse res) {
 		String authenticationHeader = request.getHeader(HEADER);
-		///if (authenticationHeader == null || !authenticationHeader.startsWith(PREFIX))
 		if (authenticationHeader == null)
 			return false;
 		return true;
 	}
 	
+	//validateToken si es correcto
 	private Claims validateToken(HttpServletRequest request) {
-		//String jwtToken = request.getHeader(HEADER).replace(PREFIX, "");
-		
-		
 		String jwtToken = request.getHeader(HEADER);
 		return Jwts.parser().setSigningKey(SECRET_JWT.getBytes()).parseClaimsJws(jwtToken).getBody();
 	}
